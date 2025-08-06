@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Add RFID fields to POS config form -->
+        <record id="view_pos_config_form_rfid" model="ir.ui.view">
+            <field name="name">pos.config.form.rfid</field>
+            <field name="model">pos.config</field>
+            <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//h2[last()]" position="after">
+                    <h2>Autenticación RFID</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane">
+                                <field name="enable_rfid_auth"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="enable_rfid_auth"/>
+                                <div class="text-muted">
+                                    Habilitar autenticación con tarjeta RFID para usuarios del POS
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box" attrs="{'invisible': [('enable_rfid_auth', '=', False)]}">
+                            <div class="o_setting_left_pane">
+                                <field name="rfid_auto_lock"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="rfid_auto_lock"/>
+                                <div class="text-muted">
+                                    Bloquear automáticamente la pantalla del POS después de inactividad
+                                </div>
+                                <div class="content-group mt16" attrs="{'invisible': [('rfid_auto_lock', '=', False)]}">
+                                    <div class="row">
+                                        <label for="rfid_lock_timeout" class="col-lg-3 o_light_label"/>
+                                        <field name="rfid_lock_timeout"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box" attrs="{'invisible': [('enable_rfid_auth', '=', False)]}">
+                            <div class="o_setting_left_pane">
+                                <field name="rfid_require_pin"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="rfid_require_pin"/>
+                                <div class="text-muted">
+                                    Siempre requerir PIN incluso para usuarios de solo RFID
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo> 

@@ -1,0 +1,409 @@
+/* RFID Authentication Styles */
+
+.rfid-auth-popup {
+  max-width: 500px;
+  margin: 50px auto;
+  z-index: 10000 !important;
+  /* Higher than screen lock overlay */
+}
+
+.modal-backdrop {
+  z-index: 9950 !important;
+  /* Below popup but above screen lock */
+}
+
+/* Ensure all popup-related elements have proper z-index */
+.popup,
+.popup.popup-rfid-auth {
+  z-index: 10001 !important;
+}
+
+.popup-rfid-auth .modal-dialog {
+  overflow: hidden !important;
+  z-index: 10002 !important;
+}
+
+/* Make sure modal elements are above screen lock */
+.modal,
+.modal-dialog,
+.modal-content {
+  z-index: 10000 !important;
+}
+
+.rfid-auth-popup.modal-content {
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.rfid-auth-popup .modal-header {
+  background: rgb(110, 200, 155);
+  box-shadow: rgba(0, 0, 0, 0.3) 0px -10px 15px -12px inset, rgb(85, 85, 85) 0px 0px 0px 0px;
+  color: white;
+  border-radius: 10px 10px 0 0;
+  text-align: center;
+  padding: 10px;
+}
+
+.rfid-auth-popup .modal-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  font-size: 15px;
+  font-weight: normal;
+}
+
+.rfid-auth-popup .modal-title .fa {
+  display: block;
+  font-size: 23px;
+  color: rgba(255, 255, 255, .5);
+  margin-right: 13px;
+}
+
+.rfid-auth-container {
+  padding: 30px;
+  text-align: center;
+}
+
+.auth-status {
+  margin-bottom: 30px;
+}
+
+.status-text {
+  font-size: 16px;
+  color: #000;
+}
+
+.rfid-section {
+  margin-bottom: 30px;
+  padding: 20px;
+  background: linear-gradient(180deg, #ececec 0%, #d3d3d3 100%);
+  border-radius: 8px;
+  border: 2px dashed #646464;
+  transition: all 0.3s ease;
+}
+
+.rfid-section.active {
+  border-color: #28a745;
+  background: #e8f5e8;
+}
+
+.rfid-section.error {
+  border-color: #dc3545;
+  background: #fce8e8;
+}
+
+.rfid-icon {
+  margin-bottom: 15px;
+  color: #666;
+}
+
+.rfid-text {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #000;
+}
+
+.rfid-status {
+  font-size: 1em;
+  color: #666;
+}
+
+.rfid-status.waiting {
+  color: #574F00;
+}
+
+.rfid-status.success {
+  color: #067a21;
+}
+
+.rfid-status.error {
+  color: #790c17;
+}
+
+.divider {
+  margin: 30px 0;
+  position: relative;
+  text-align: center;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #333;
+  z-index: -10;
+}
+
+.divider span {
+  background: #333;
+  padding: 0 15px;
+  color: #fff;
+  font-weight: bold;
+}
+
+.pin-section {
+  margin-bottom: 30px;
+}
+
+.pin-input-container {
+  display: flex;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.pin-input {
+  flex: 1;
+  padding: 12px 15px;
+  font-size: 1.1em;
+  border: 2px solid #ddd;
+  border-radius: 5px 0 0 5px;
+  outline: none;
+  text-align: center;
+  letter-spacing: 2px;
+  background-color: white !important;
+  color: black !important;
+  z-index: 10100 !important;
+  position: relative;
+  pointer-events: auto !important;
+}
+
+.pin-input:focus {
+  border-color: rgb(110, 200, 155);
+}
+
+.pin-submit {
+  padding: 12px 15px;
+  border: 2px solid rgb(110, 200, 155);
+  border-left: none;
+  background: rgb(110, 200, 155);
+  color: white;
+  border-radius: 0 5px 5px 0;
+  border-radius: 0 5px 5px 0;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  pointer-events: auto !important;
+  z-index: 10100 !important;
+  position: relative;
+}
+
+.pin-submit:hover {
+  background: rgb(110, 200, 155);
+}
+
+.action-buttons {
+  margin-top: 30px;
+}
+
+.action-buttons .btn {
+  margin: 0 10px;
+  padding: 10px 20px;
+  border-radius: 5px;
+}
+
+/* Screen Lock Overlay */
+.screen-lock-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lock-content {
+  text-align: center;
+  color: white;
+}
+
+.lock-icon {
+  margin-bottom: 30px;
+  opacity: 0.8;
+}
+
+.lock-message h2 {
+  font-size: 2.5em;
+  margin-bottom: 15px;
+  font-weight: 300;
+}
+
+.lock-message p {
+  font-size: 1.2em;
+  margin-bottom: 40px;
+  opacity: 0.8;
+}
+
+.unlock-btn {
+  padding: 15px 30px;
+  font-size: 1.1em;
+  border-radius: 25px;
+  transition: all 0.3s ease;
+}
+
+.unlock-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.rfid-status-indicator {
+  display: flex;
+  align-items: center;
+  background: #f8f9fa;
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+}
+
+.rfid-icon-small {
+  margin-right: 8px;
+  color: #666;
+}
+
+.rfid-status-text {
+  font-size: 0.9em;
+  color: #666;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.rfid-section.waiting .rfid-icon {
+  animation: pulse 2s infinite;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rfid-auth-popup {
+  animation: fadeIn 0.3s ease;
+}
+
+.pos .pos-rightheader .lock-button {
+  display: inline-block;
+  cursor: pointer;
+  width: 20px;
+  height: 16px;
+  color: white;
+}
+
+.btn-lock {
+  background: #6c757d;
+  border: 1px solid #6c757d;
+  color: white;
+  padding: 8px 12px;
+  margin-left: 10px;
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+.btn-lock:hover {
+  background: #5a6268;
+  color: white;
+}
+
+/* POS Locked State */
+.pos-locked {
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.pos-locked * {
+  pointer-events: none !important;
+}
+
+.pos-locked .popup-rfid-auth,
+.pos-locked .popup-rfid-auth *,
+.pos-locked .rfid-auth-popup,
+.pos-locked .rfid-auth-popup *,
+.pos-locked .modal-dialog.rfid-auth-popup,
+.pos-locked .modal-dialog.rfid-auth-popup * {
+  pointer-events: auto !important;
+}
+
+.popup-rfid-auth,
+.rfid-auth-popup,
+.modal-dialog.rfid-auth-popup {
+  background-color: rgb(211, 211, 211) !important;
+  z-index: 10100 !important;
+  padding: 0 !important;
+  border-radius: 10px;
+}
+
+.popup-rfid-auth .modal-content,
+.rfid-auth-popup .modal-content {
+  z-index: 10101 !important;
+}
+
+.rfid-status-indicator.connected .rfid-icon-small {
+  color: #28a745;
+}
+
+.rfid-status-indicator.disconnected .rfid-icon-small {
+  color: #dc3545;
+}
+
+.rfid-status-indicator.connected .status {
+  color: #28a745;
+}
+
+.rfid-status-indicator.disconnected .status {
+  color: #dc3545;
+}
+
+.screen-lock-overlay.visible {
+  opacity: 1;
+}
+
+.screen-lock-overlay {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .rfid-auth-popup {
+    max-width: 90%;
+    margin: 20px auto;
+  }
+
+  .rfid-auth-container {
+    padding: 20px;
+  }
+
+  .lock-message h2 {
+    font-size: 2em;
+  }
+
+  .btn-lock {
+    padding: 6px 10px;
+    font-size: 0.9em;
+  }
+}

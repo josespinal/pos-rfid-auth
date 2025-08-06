@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" xml:space="preserve">
+
+    <!-- RFID Authentication Popup Template -->
+    <t t-name="RfidAuthPopupWidget">
+        <div class="modal-dialog rfid-auth-popup">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">
+                        <i class="fa fa-lock fa-2x"></i>
+                        <span class="title">Pantalla Bloqueada</span>
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <div class="rfid-auth-container">
+                        <div class="auth-status">
+                            <span class="status-text">Por favor escanee su tarjeta o ingrese PIN</span>
+                        </div>
+                        
+                        <div class="rfid-section">
+                            <div class="rfid-icon">
+                                <i class="fa fa-credit-card fa-3x"></i>
+                            </div>
+                            <div class="rfid-text">Escanear Tarjeta</div>
+                            <div class="rfid-status waiting">Esperando tarjeta...</div>
+                        </div>
+                        
+                        <div class="divider">
+                            <span>O</span>
+                        </div>
+                        
+                        <div class="pin-section">
+                            <div class="pin-input-container">
+                                <input type="password" class="pin-input" placeholder="Ingrese PIN" maxlength="10"/>
+                                <button class="btn btn-primary pin-submit">
+                                    <i class="fa fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button class="btn btn-default cancel-auth">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <!-- Screen Lock Overlay Template -->
+    <t t-name="ScreenLockOverlay">
+        <div class="screen-lock-overlay">
+            <div class="lock-content">
+                <div class="lock-icon">
+                    <i class="fa fa-lock fa-5x"></i>
+                </div>
+                <div class="lock-message">
+                    <h2>Pantalla Bloqueada</h2>
+                    <p>Escanee tarjeta o ingrese PIN para desbloquear</p>
+                </div>
+                <div class="unlock-button">
+                    <button class="btn btn-primary btn-lg unlock-btn">
+                        <i class="fa fa-unlock"></i> Desbloquear
+                    </button>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <!-- RFID Status Indicator Template -->
+    <t t-name="RfidStatusIndicator">
+        <div class="rfid-status-indicator">
+            <div class="rfid-icon-small">
+                <i class="fa fa-credit-card"></i>
+            </div>
+            <div class="rfid-status-text">
+                <span class="status">Listo</span>
+            </div>
+        </div>
+    </t>
+
+    <!-- RFID Lock Button Widget Template -->
+    
+    <t t-extend="Chrome">
+        <t t-jquery="div.pos-rightheader" t-operation="append">
+            <t t-call="RfidLockButtonWidget"/>
+        </t>
+    </t>
+
+    <t t-name="RfidLockButtonWidget">
+        <div class="oe_status">
+            <div class="lock-button oe_icon" onclick="window.rfid_lock_screen_handler()">
+                <i class="fa fa-fw fa-lock"
+                role="img"
+                aria-label="Bloquear Pantalla"
+                title="Bloquear Pantalla"></i>
+            </div>
+        </div>
+    </t>
+</templates> 

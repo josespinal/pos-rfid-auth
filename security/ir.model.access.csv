@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_res_users_rfid,res.users.rfid,base.model_res_users,base.group_user,1,0,0,0
+access_res_users_rfid_manager,res.users.rfid.manager,base.model_res_users,point_of_sale.group_pos_manager,1,1,1,0
+access_pos_config_rfid,pos.config.rfid,point_of_sale.model_pos_config,base.group_user,1,0,0,0
+access_pos_config_rfid_manager,pos.config.rfid.manager,point_of_sale.model_pos_config,point_of_sale.group_pos_manager,1,1,1,0 
