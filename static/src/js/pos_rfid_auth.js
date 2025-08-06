@@ -21,7 +21,8 @@ odoo.define('pos_rfid_auth.main', function (require) {
     'enable_rfid_auth',
     'rfid_auto_lock',
     'rfid_lock_timeout',
-    'rfid_require_pin'
+    'rfid_require_pin',
+    'rfid_only_mode'
   ]);
 
   // Load RFID-related fields in users
@@ -127,9 +128,10 @@ odoo.define('pos_rfid_auth.main', function (require) {
       if (user) {
         // Check if PIN is required
         if (user.pos_rfid_pin_combination || this.config.rfid_require_pin) {
-          // Show authentication popup with PIN requirement
+          // Show authentication popup with PIN requirement unless in RFID-only mode
+          var method = this.config.rfid_only_mode ? 'rfid' : 'both';
           this.show_rfid_authentication({
-            method: 'both',
+            method: method,
             card_id: card_id,
             user: user
           });
@@ -139,8 +141,9 @@ odoo.define('pos_rfid_auth.main', function (require) {
         }
       } else {
         // Unknown card, show authentication popup
+        var method = this.config.rfid_only_mode ? 'rfid' : 'both';
         this.show_rfid_authentication({
-          method: 'both',
+          method: method,
           card_id: card_id
         });
       }
@@ -192,10 +195,16 @@ odoo.define('pos_rfid_auth.main', function (require) {
     show_rfid_authentication: function (options) {
       var self = this;
       options = options || {};
+      
+      // Determine authentication method
+      var method = options.method || 'both';
+      if (this.config.rfid_only_mode) {
+        method = 'rfid';  // Force RFID-only mode if configured
+      }
 
       this.gui.show_popup('rfid_auth', {
         title: _t('Autenticación Requerida'),
-        method: options.method || 'both',
+        method: method,
         card_id: options.card_id,
         user: options.user,
         confirm: function (user) {
@@ -352,4 +361,4 @@ odoo.define('pos_rfid_auth.main', function (require) {
     }
   };
 
-}); 
+});

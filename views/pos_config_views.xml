@@ -49,9 +49,20 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="col-12 col-lg-6 o_setting_box" attrs="{'invisible': [('enable_rfid_auth', '=', False)]}">
+                            <div class="o_setting_left_pane">
+                                <field name="rfid_only_mode"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="rfid_only_mode"/>
+                                <div class="text-muted">
+                                    Ocultar entrada de PIN y solo permitir autenticación por tarjeta RFID
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </xpath>
             </field>
         </record>
     </data>
-</odoo> 
+</odoo>

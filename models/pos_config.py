@@ -29,4 +29,9 @@ class PosConfig(models.Model):
         default=False,
         help='Siempre requerir PIN incluso para usuarios de solo RFID'
     )
- 
+    
+    rfid_only_mode = fields.Boolean(
+        string='Modo Solo RFID',
+        default=False,
+        help='Ocultar entrada de PIN y solo permitir autenticación por RFID'
+    )

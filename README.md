@@ -11,6 +11,7 @@ This module provides RFID card authentication functionality for Odoo 12 Point of
 - 🌐 **WebHID Support**: Direct communication with HID devices in supported browsers
 - 👥 **User Management**: Individual RFID card assignment and authentication preferences
 - 🎮 **Manual Controls**: Lock button and keyboard shortcuts for manual control
+- 🏷️ **RFID-Only Mode**: Option to hide PIN input and show only RFID authentication
 
 ## Installation
 
@@ -28,187 +29,185 @@ Navigate to **Point of Sale > Configuration > Point of Sale** and edit your POS 
 1. **Enable RFID Authentication**: Check this option to activate RFID features
 2. **Auto Lock Screen**: Enable automatic screen locking after inactivity
 3. **Lock Timeout**: Set the inactivity timeout in minutes (default: 5 minutes)
-4. **Always Require PIN**: Force PIN requirement even for RFID-only users
+4. **Always Require PIN**: Force PIN entry even for RFID-only users
+5. **RFID-Only Mode**: Hide PIN input field and show only RFID authentication
 
 ### User Configuration
 
-Navigate to **Settings > Users & Companies > Users** and edit user profiles:
+Navigate to **Settings > Users & Companies > Users** and edit each user:
 
-1. **RFID Card ID**: Enter or scan the RFID card identifier
-2. **Require RFID for POS**: Enable RFID authentication for this user
-3. **RFID + PIN Combination**: Require both RFID card and PIN for authentication
+1. **RFID Card ID**: Enter the unique ID of the user's RFID card
+2. **Require RFID**: Force this user to authenticate with RFID
+3. **RFID + PIN Combination**: Require both RFID card and PIN for this user
 
-## Usage
+## RFID Reader Setup
 
-### Authentication Methods
+### Supported Devices
 
-The module supports three authentication methods:
+- **HID-compatible RFID readers**: Most USB RFID readers that present as HID devices
+- **Keyboard emulation readers**: RFID readers that send data as keyboard input
+- **WebHID compatible devices**: For direct browser communication (requires user gesture)
 
-1. **RFID Only**: User scans their RFID card for instant access
-2. **PIN Only**: User enters their security PIN
-3. **RFID + PIN**: User must both scan RFID card AND enter PIN (recommended for high security)
+### Connection Methods
+
+#### 1. Keyboard Input Mode (Default)
+- Works with most RFID readers out of the box
+- Readers send card data as simulated keyboard input
+- No special browser permissions required
+- Automatically activated on module initialization
+
+#### 2. WebHID Mode (Optional)
+- Direct communication with HID devices
+- Requires user gesture to enable (security requirement)
+- More reliable for specific hardware
+- Must be explicitly enabled by user action
+
+**Important**: WebHID requires user interaction to request device permissions. The module defaults to keyboard input mode to avoid security errors.
+
+### Device Configuration
+
+1. Connect your RFID reader via USB
+2. Ensure the reader is recognized by your operating system
+3. For WebHID mode, the user must click an "Enable WebHID" button (if implemented)
+4. Test by scanning a card - you should see input in the authentication popup
+
+## Security Features
 
 ### Screen Locking
 
-- **Automatic**: Screen locks after the configured inactivity timeout
-- **Manual**: Click the lock button in the POS header or use Ctrl+Alt+L
-- **Unlock**: Scan RFID card or click unlock button to show authentication dialog
+- **Automatic Locking**: Based on configurable inactivity timeout
+- **Manual Locking**: 
+  - Lock button in POS header
+  - Keyboard shortcut: `Ctrl+Alt+L`
+- **Lock on Startup**: Screen automatically locks when POS starts
 
-### RFID Reader Support
+### Authentication Methods
 
-The module supports two types of RFID readers and **automatically defaults to keyboard input** for maximum compatibility:
+#### 1. RFID Only (`rfid_only_mode` enabled)
+- Only RFID card scanning is shown
+- PIN input field is hidden
+- Ideal for environments where only RFID authentication is desired
 
-#### Default: Keyboard Emulation Readers
-**Recommended and automatic** - For RFID readers that act as keyboards:
-- Any USB HID keyboard-emulating RFID reader
-- Serial readers with keyboard wedge output
-- Most consumer-grade RFID readers
-- Works immediately without browser permissions
+#### 2. PIN Only
+- Only PIN input is available
+- RFID section is hidden
+- Traditional authentication method
 
-#### Optional: WebHID Compatible Readers
-For direct USB HID communication (requires HTTPS, compatible browser, and user permission):
-- AuthenTec devices (Vendor ID: 0x08FF)
-- Realtek devices (Vendor ID: 0x0BDA)
-- Dell devices (Vendor ID: 0x413C)
-- Honeywell devices (Vendor ID: 0x0C2E)
-- Generic HID readers (Vendor ID: 0x1234)
+#### 3. Combined (Default)
+- Both RFID and PIN options available
+- User can choose preferred method
+- Enhanced security for dual authentication
 
-**Note**: WebHID requires explicit user permission and must be enabled manually if needed. The module works perfectly with keyboard input mode.
+#### 4. RFID + PIN Combination
+- Requires both RFID card AND PIN
+- Maximum security level
+- Configured per user
 
-### Security Features
+### User Authentication Flows
 
-- **Duplicate Prevention**: Prevents duplicate card scans within 2 seconds
-- **Interaction Blocking**: Completely disables POS interactions when locked
-- **Keyboard Protection**: Blocks keyboard shortcuts (except F5 and dev tools)
-- **Right-click Protection**: Disables context menus when locked
-- **Session Persistence**: Maintains authentication state across browser refreshes
+1. **Screen Unlock**: When screen is locked, show authentication popup
+2. **User Switching**: Change active cashier without unlocking screen
+3. **Security Validation**: Verify user permissions and authentication method
+
+## Usage
+
+### Basic Operations
+
+1. **Start POS**: Screen locks automatically on startup
+2. **Unlock Screen**: Scan RFID card or enter PIN in popup
+3. **Lock Screen**: Click lock button or use `Ctrl+Alt+L`
+4. **Switch Users**: Scan different user's RFID card when unlocked
+
+### RFID Card Management
+
+1. **Register Cards**: Assign unique card IDs to users in user settings
+2. **Test Authentication**: Use the authentication popup to verify cards work
+3. **Update Cards**: Change card IDs in user settings as needed
+
+### Troubleshooting
+
+#### Common Issues
+
+1. **RFID Reader Not Working**
+   - Check USB connection
+   - Verify reader is HID-compatible
+   - Try keyboard input mode
+   - Check browser console for errors
+
+2. **Authentication Fails**
+   - Verify card ID matches user setting exactly
+   - Check user has proper POS permissions
+   - Ensure card ID is unique across users
+
+3. **WebHID Errors**
+   - WebHID requires user gesture to activate
+   - Use keyboard input mode as fallback
+   - Check browser compatibility
+
+4. **Screen Won't Lock/Unlock**
+   - Check module is enabled in POS config
+   - Verify user permissions
+   - Look for JavaScript errors in console
+
+#### Debug Mode
+
+Enable debug mode in Odoo to access additional features:
+
+1. Navigate to `Settings > Activate Developer Mode`
+2. Check browser console for detailed logging
+3. Use the popup's test features (if enabled)
+
+## Browser Compatibility
+
+### WebHID Support
+- **Chrome/Edge**: Full support
+- **Firefox**: Limited support
+- **Safari**: No support
+- **Mobile browsers**: Generally no support
+
+### Keyboard Input Support
+- **All modern browsers**: Full support
+- **Mobile devices**: Limited (depends on reader)
 
 ## Technical Details
 
-### Browser Compatibility
-
-| Feature        | Chrome/Edge | Firefox | Safari |
-| -------------- | ----------- | ------- | ------ |
-| Keyboard Input | ✅           | ✅       | ✅      |
-| WebHID         | ✅           | ❌       | ❌      |
-| Screen Lock    | ✅           | ✅       | ✅      |
-
-**Note**: WebHID is only supported in Chromium-based browsers. Firefox and Safari will automatically fall back to keyboard input mode.
-
-### RFID Card Formats
-
-The module accepts various RFID card formats:
-- Decimal numbers (e.g., "1234567890")
-- Hexadecimal strings (e.g., "ABCDEF123456")
-- ASCII strings (depends on reader configuration)
-- Custom formats (automatically parsed from HID input)
-
 ### Architecture
 
+- **Frontend**: JavaScript widgets and popups for POS interface
+- **Backend**: Python models for user authentication and card management
+- **Templates**: QWeb templates for UI components
+- **Events**: Real-time event handling for RFID scans and screen locking
+
+### File Structure
+
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   RFID Reader   │────│ Screen Locker   │────│  Auth Popup     │
-│                 │    │                 │    │                 │
-│ - WebHID API    │    │ - Auto Lock     │    │ - PIN Input     │
-│ - Keyboard Input│    │ - Manual Lock   │    │ - RFID Scanner  │
-│ - Event Handler │    │ - Overlay UI    │    │ - Dual Auth     │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         └───────────────────────┼───────────────────────┘
-                                 │
-                    ┌─────────────────┐
-                    │   POS Model     │
-                    │                 │
-                    │ - User Auth     │
-                    │ - Event Router  │
-                    │ - State Manager │
-                    └─────────────────┘
-```
-
-## Troubleshooting
-
-### RFID Reader Issues
-
-1. **Reader Not Working**: Ensure your RFID reader is in keyboard emulation mode (default)
-2. **WebHID Security Error**: This is normal - the module automatically uses keyboard input
-3. **No Browser Permissions Needed**: Keyboard input mode works without any permissions
-4. **WebHID Optional**: Only enable WebHID if you specifically need direct HID communication
-5. **HTTPS Required**: Only needed for WebHID mode (not for keyboard mode)
-
-### Authentication Issues
-
-1. **Card Not Recognized**: Verify RFID card ID is correctly entered in user profile
-2. **PIN Required**: Check user settings for PIN combination requirements
-3. **Access Denied**: Ensure user has "Require RFID for POS" enabled
-4. **Multiple Users**: Each RFID card can only be assigned to one user
-
-### Screen Lock Problems
-
-1. **Auto-lock Not Working**: Check POS configuration for "Auto Lock Screen" setting
-2. **Cannot Unlock**: Try refreshing the page or use the manual PIN entry
-3. **Keyboard Blocked**: This is intentional - use RFID or PIN to unlock
-
-### Performance Issues
-
-1. **Slow Authentication**: Network latency during user lookup - check server performance
-2. **Browser Lag**: Disable browser extensions that might interfere with HID access
-3. **Memory Usage**: Module cleanup happens automatically - restart browser if needed
-
-## Development and Testing
-
-### Debug Mode
-
-Enable debug mode in Odoo to access additional features:
-- Test RFID button in authentication popup
-- Extended console logging
-- Development keyboard shortcuts
-
-### Testing RFID
-
-1. Use the "Test RFID" button in debug mode
-2. Manually enter RFID card IDs in the authentication popup
-3. Use keyboard input simulation for testing
-
-### Customization
-
-The module is designed to be extensible:
-
-```javascript
-// Access RFID reader instance
-var rfidReader = pos.get_rfid_reader();
-
-// Listen for card scans
-rfidReader.on('card_scanned', this, function(event) {
-    console.log('Card scanned:', event.card_id);
-});
-
-// Manual screen lock
-pos.lock_screen();
-
-// Check lock status
-if (pos.get_screen_locker().is_screen_locked()) {
-    console.log('Screen is locked');
-}
+pos_rfid_auth/
+├── models/
+│   ├── pos_config.py          # POS configuration fields
+│   └── res_users.py           # User RFID fields and authentication
+├── static/src/
+│   ├── js/
+│   │   ├── pos_rfid_auth.js       # Main POS integration
+│   │   ├── rfid_auth_popup.js     # Authentication popup
+│   │   ├── rfid_reader.js         # RFID reader interface
+│   │   └── screen_locker.js       # Screen locking logic
+│   ├── xml/
+│   │   └── pos_rfid_auth.xml      # QWeb templates
+│   └── css/
+│       └── pos_rfid_auth.css      # Styling
+├── views/
+│   ├── pos_config_views.xml       # Configuration interface
+│   ├── res_users_views.xml        # User RFID settings
+│   └── templates.xml              # Asset loading
+└── __manifest__.py                # Module definition
 ```
 
-## Support
+### Dependencies
 
-For issues and questions:
-1. Check the Odoo log files for error messages
-2. Enable browser developer tools to see console output
-3. Verify RFID reader compatibility with your hardware
-4. Test with different browsers if WebHID issues occur
+- `point_of_sale`: Core POS functionality
+- `web`: Basic web framework
+- Modern browser with JavaScript support
 
 ## License
 
-This module is licensed under the same license as Odoo 12.
-
-## Changelog
-
-### Version 1.0.0
-- Initial release
-- WebHID and keyboard input support
-- Screen locking functionality
-- PIN + RFID authentication
-- User management integration
-- Multi-browser compatibility 
+This module is provided under the LGPL-3 license. See LICENSE file for details.
