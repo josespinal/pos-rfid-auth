@@ -56,21 +56,24 @@ The module supports three authentication methods:
 
 ### RFID Reader Support
 
-The module supports two types of RFID readers:
+The module supports two types of RFID readers and **automatically defaults to keyboard input** for maximum compatibility:
 
-#### WebHID Compatible Readers
-For direct USB HID communication (requires HTTPS and compatible browser):
+#### Default: Keyboard Emulation Readers
+**Recommended and automatic** - For RFID readers that act as keyboards:
+- Any USB HID keyboard-emulating RFID reader
+- Serial readers with keyboard wedge output
+- Most consumer-grade RFID readers
+- Works immediately without browser permissions
+
+#### Optional: WebHID Compatible Readers
+For direct USB HID communication (requires HTTPS, compatible browser, and user permission):
 - AuthenTec devices (Vendor ID: 0x08FF)
 - Realtek devices (Vendor ID: 0x0BDA)
 - Dell devices (Vendor ID: 0x413C)
 - Honeywell devices (Vendor ID: 0x0C2E)
 - Generic HID readers (Vendor ID: 0x1234)
 
-#### Keyboard Emulation Readers
-For RFID readers that act as keyboards:
-- Any USB HID keyboard-emulating RFID reader
-- Serial readers with keyboard wedge output
-- Most consumer-grade RFID readers
+**Note**: WebHID requires explicit user permission and must be enabled manually if needed. The module works perfectly with keyboard input mode.
 
 ### Security Features
 
@@ -124,12 +127,13 @@ The module accepts various RFID card formats:
 
 ## Troubleshooting
 
-### RFID Reader Not Detected
+### RFID Reader Issues
 
-1. **Check Browser Support**: Use Chrome/Edge for WebHID support
-2. **HTTPS Required**: WebHID only works over HTTPS connections
-3. **Device Permissions**: Grant permission when browser prompts for HID access
-4. **Fallback Mode**: Module automatically falls back to keyboard input if WebHID fails
+1. **Reader Not Working**: Ensure your RFID reader is in keyboard emulation mode (default)
+2. **WebHID Security Error**: This is normal - the module automatically uses keyboard input
+3. **No Browser Permissions Needed**: Keyboard input mode works without any permissions
+4. **WebHID Optional**: Only enable WebHID if you specifically need direct HID communication
+5. **HTTPS Required**: Only needed for WebHID mode (not for keyboard mode)
 
 ### Authentication Issues
 

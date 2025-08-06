@@ -30,15 +30,36 @@ odoo.define('pos_rfid_auth.rfid_reader', function (require) {
      * Initialize the RFID reader
      */
     initialize: function () {
+      // Always start with keyboard input to avoid WebHID security errors
+      // WebHID can be enabled later via user gesture if needed
+      this.setup_keyboard_input();
+    },
+
+    /**
+     * Enable WebHID (must be called from user gesture)
+     */
+    enable_webhid: function () {
       var self = this;
 
       // Check if WebHID is supported
-      if ('hid' in navigator) {
-        this.setup_webhid();
-      } else {
-        // Fallback to keyboard input method
-        this.setup_keyboard_input();
+      if (!('hid' in navigator)) {
+        console.warn('WebHID not supported in this browser');
+        return Promise.reject('WebHID not supported');
       }
+
+      // Request HID device access (requires user gesture)
+      return this.request_device().then(function (device) {
+        if (device) {
+          self.connect_device(device);
+          return true;
+        } else {
+          console.warn('No HID device selected');
+          return false;
+        }
+      }).catch(function (error) {
+        console.warn('Failed to enable WebHID:', error);
+        throw error;
+      });
     },
 
     /**
@@ -251,6 +272,31 @@ odoo.define('pos_rfid_auth.rfid_reader', function (require) {
     test_scan: function () {
       var test_card_id = 'TEST_CARD_' + Date.now();
       this.process_card_scan(test_card_id);
+    },
+
+    /**
+     * Check if WebHID is supported by the browser
+     */
+    is_webhid_supported: function () {
+      return 'hid' in navigator;
+    },
+
+    /**
+     * Check if currently using WebHID (vs keyboard input)
+     */
+    is_using_webhid: function () {
+      return this.device !== null && this.is_connected;
+    },
+
+    /**
+     * Get current input method
+     */
+    get_input_method: function () {
+      if (this.is_using_webhid()) {
+        return 'webhid';
+      } else {
+        return 'keyboard';
+      }
     }
 
   });
