@@ -195,7 +195,7 @@ odoo.define('pos_rfid_auth.main', function (require) {
     show_rfid_authentication: function (options) {
       var self = this;
       options = options || {};
-      
+
       // Determine authentication method
       var method = options.method || 'both';
       if (this.config.rfid_only_mode) {

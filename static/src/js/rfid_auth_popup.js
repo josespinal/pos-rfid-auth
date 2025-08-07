@@ -227,7 +227,7 @@ odoo.define('pos_rfid_auth.rfid_auth_popup', function (require) {
     reset_authentication: function () {
       this.pin_value = '';
       this.$('.pin-input').val('').focus();
-      
+
       // Set appropriate message based on authentication method
       if (this.authentication_method === 'rfid') {
         this.set_auth_status(_t('Escanee su tarjeta RFID para acceder'));
@@ -236,7 +236,7 @@ odoo.define('pos_rfid_auth.rfid_auth_popup', function (require) {
       } else {
         this.set_auth_status(_t('Por favor escanee su tarjeta RFID o ingrese PIN'));
       }
-      
+
       this.start_rfid_wait();
     },
 
@@ -245,7 +245,7 @@ odoo.define('pos_rfid_auth.rfid_auth_popup', function (require) {
      */
     start_rfid_wait: function () {
       this.waiting_for_rfid = true;
-      
+
       if (this.authentication_method === 'rfid') {
         this.set_rfid_status('waiting', _t('Esperando tarjeta RFID...'));
       } else {
