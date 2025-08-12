@@ -35,3 +35,9 @@ class PosConfig(models.Model):
         default=False,
         help='Ocultar entrada de PIN y solo permitir autenticación por RFID'
     )
+    
+    rfid_respect_popups = fields.Boolean(
+        string='Respetar Popups Activos',
+        default=True,
+        help='Si está habilitado, el bloqueo automático se retrasará cuando hay popups activos'
+    )

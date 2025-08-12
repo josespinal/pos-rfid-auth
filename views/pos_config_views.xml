@@ -60,6 +60,17 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="col-12 col-lg-6 o_setting_box" attrs="{'invisible': [('enable_rfid_auth', '=', False)]}">
+                            <div class="o_setting_left_pane">
+                                <field name="rfid_respect_popups"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="rfid_respect_popups"/>
+                                <div class="text-muted">
+                                    Retrasar el bloqueo automático cuando hay popups activos (recomendado)
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </xpath>
             </field>

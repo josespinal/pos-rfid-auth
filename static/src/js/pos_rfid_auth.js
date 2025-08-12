@@ -22,7 +22,8 @@ odoo.define('pos_rfid_auth.main', function (require) {
     'rfid_auto_lock',
     'rfid_lock_timeout',
     'rfid_require_pin',
-    'rfid_only_mode'
+    'rfid_only_mode',
+    'rfid_respect_popups'
   ]);
 
   // Load RFID-related fields in users

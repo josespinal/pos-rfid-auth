@@ -87,6 +87,13 @@ odoo.define('pos_rfid_auth.screen_locker', function (require) {
         return;
       }
 
+      // Check if there are active popups before locking (if configured to respect popups)
+      if (this.should_respect_popups() && this.has_active_popups()) {
+        // console.log('Delaying screen lock - active popup detected');
+        this.schedule_delayed_lock();
+        return;
+      }
+
       var self = this;
       this.is_locked = true;
 
@@ -293,7 +300,8 @@ odoo.define('pos_rfid_auth.screen_locker', function (require) {
      * Force lock screen (for manual locking)
      */
     force_lock: function () {
-      this.lock_screen();
+      // For manual locking, we want to force lock immediately
+      this.force_lock_immediate();
     },
 
     /**
@@ -316,12 +324,141 @@ odoo.define('pos_rfid_auth.screen_locker', function (require) {
     },
 
     /**
+     * Check if configuration requires respecting active popups
+     */
+    should_respect_popups: function () {
+      // Default to true if not configured
+      return this.pos.config.rfid_respect_popups !== false;
+    },
+
+    /**
+     * Check if there are active popups that should prevent locking
+     */
+    has_active_popups: function () {
+      // List of popup selectors to check for
+      var popup_selectors = [
+        '.popup:visible', // Generic popup check
+        '.side-dishes-popup:visible', // Side dishes popup
+        '.modal:visible', // Bootstrap modals
+        '.popup-textinput:visible', // Text input popups
+        '.popup-number:visible', // Number input popups
+        '.popup-selection:visible', // Selection popups
+        '.popup-confirm:visible', // Confirmation popups
+        '.popup-error:visible', // Error popups
+        '.popup-payment:visible', // Payment popups
+        '.packlotline-popup:visible', // Pack lot popups
+        '.popup-edit-product:visible', // Product edit popups
+        '.wizard:visible' // Any wizard dialogs
+      ];
+
+      // Check for any visible popups
+      for (var i = 0; i < popup_selectors.length; i++) {
+        if ($(popup_selectors[i]).length > 0) {
+          // console.log('Active popup detected:', popup_selectors[i]);
+          return true;
+        }
+      }
+
+      // Check for active GUI popup (POS-specific)
+      if (this.pos && this.pos.gui && this.pos.gui.current_popup) {
+        // console.log('Active GUI popup detected:', this.pos.gui.current_popup);
+        return true;
+      }
+
+      return false;
+    },
+
+    /**
+     * Schedule a delayed lock attempt
+     */
+    schedule_delayed_lock: function () {
+      var self = this;
+
+      // Clear any existing delayed lock timer
+      if (this.delayed_lock_timer) {
+        clearTimeout(this.delayed_lock_timer);
+      }
+
+      // Schedule another lock attempt in 30 seconds
+      this.delayed_lock_timer = setTimeout(function () {
+        // console.log('Attempting delayed screen lock');
+        self.lock_screen();
+      }, 30000); // 30 seconds delay
+    },
+
+    /**
+     * Force lock screen (ignores active popups - for manual locking)
+     */
+    force_lock_immediate: function () {
+      // Close any active popups first
+      this.close_active_popups();
+
+      // Force lock regardless of popup state
+      this.force_lock_internal();
+    },
+
+    /**
+     * Internal force lock method
+     */
+    force_lock_internal: function () {
+      var self = this;
+      this.is_locked = true;
+
+      // Create lock overlay
+      this.create_lock_overlay();
+
+      // Disable POS interactions
+      this.disable_pos_interactions();
+
+      // Clear timers
+      if (this.inactivity_timer) {
+        clearTimeout(this.inactivity_timer);
+        this.inactivity_timer = null;
+      }
+      if (this.delayed_lock_timer) {
+        clearTimeout(this.delayed_lock_timer);
+        this.delayed_lock_timer = null;
+      }
+
+      // Trigger lock event
+      this.trigger('screen_locked');
+
+      // console.log('POS screen force locked');
+    },
+
+    /**
+     * Close active popups gracefully
+     */
+    close_active_popups: function () {
+      // Close GUI popup if active
+      if (this.pos && this.pos.gui && this.pos.gui.current_popup) {
+        try {
+          this.pos.gui.close_popup();
+        } catch (e) {
+          console.warn('Could not close GUI popup:', e);
+        }
+      }
+
+      // Close any visible jQuery popups/modals
+      $('.popup:visible, .modal:visible').each(function () {
+        try {
+          $(this).find('.button.cancel, .btn-close, .close').first().click();
+        } catch (e) {
+          console.warn('Could not close popup:', e);
+        }
+      });
+    },
+
+    /**
      * Destroy the screen locker
      */
     destroy: function () {
-      // Clear timer
+      // Clear timers
       if (this.inactivity_timer) {
         clearTimeout(this.inactivity_timer);
+      }
+      if (this.delayed_lock_timer) {
+        clearTimeout(this.delayed_lock_timer);
       }
 
       // Remove overlay
