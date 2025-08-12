@@ -20,6 +20,7 @@ odoo.define('pos_rfid_auth.screen_locker', function (require) {
       this.inactivity_timer = null;
       this.lock_timeout = 5 * 60 * 1000; // Default 5 minutes
       this.last_activity = Date.now();
+      this.saved_popup_state = null; // Store popup state when forcing lock
 
       this.setup_inactivity_tracking();
     },
@@ -87,11 +88,19 @@ odoo.define('pos_rfid_auth.screen_locker', function (require) {
         return;
       }
 
-      // Check if there are active popups before locking (if configured to respect popups)
-      if (this.should_respect_popups() && this.has_active_popups()) {
-        // console.log('Delaying screen lock - active popup detected');
-        this.schedule_delayed_lock();
-        return;
+      // Check if there are active popups before locking
+      if (this.has_active_popups()) {
+        if (this.should_respect_popups()) {
+          // Respect popups - delay the lock
+          // console.log('Delaying screen lock - active popup detected');
+          this.schedule_delayed_lock();
+          return;
+        } else {
+          // Don't respect popups - save state and force lock
+          // console.log('Force locking with active popup - will save state for restoration');
+          this.save_popup_state();
+          // Continue with normal lock (popup will be closed by disable_pos_interactions)
+        }
       }
 
       var self = this;
@@ -141,6 +150,12 @@ odoo.define('pos_rfid_auth.screen_locker', function (require) {
 
       // Trigger unlock event
       this.trigger('screen_unlocked');
+
+      // Restore any saved popup state after a brief delay
+      var self = this;
+      setTimeout(function () {
+        self.restore_popup_state();
+      }, 500); // Give UI time to stabilize
 
       // console.log('POS screen unlocked');
     },
@@ -214,6 +229,9 @@ odoo.define('pos_rfid_auth.screen_locker', function (require) {
      * Disable POS interactions
      */
     disable_pos_interactions: function () {
+      // Close any remaining popups that might still be open
+      this.force_close_popups();
+
       // Add CSS class to disable interactions
       $('.pos').addClass('pos-locked');
 
@@ -427,9 +445,19 @@ odoo.define('pos_rfid_auth.screen_locker', function (require) {
     },
 
     /**
-     * Close active popups gracefully
+     * Close active popups gracefully and save state for restoration
      */
     close_active_popups: function () {
+      // Save popup state before closing
+      this.save_popup_state();
+
+      this.force_close_popups();
+    },
+
+    /**
+     * Force close all popups without saving state
+     */
+    force_close_popups: function () {
       // Close GUI popup if active
       if (this.pos && this.pos.gui && this.pos.gui.current_popup) {
         try {
@@ -447,6 +475,181 @@ odoo.define('pos_rfid_auth.screen_locker', function (require) {
           console.warn('Could not close popup:', e);
         }
       });
+
+      // Force hide any remaining visible popups
+      $('.popup:visible, .modal:visible').hide();
+    },
+
+    /**
+     * Save current popup state for potential restoration
+     */
+    save_popup_state: function () {
+      var popup_state = null;
+
+      // Check for side dishes popup specifically
+      if ($('.side-dishes-popup:visible').length > 0) {
+        popup_state = {
+          type: 'side_dishes',
+          orderline_id: null,
+          product_id: null
+        };
+
+        // Try to get the current orderline being configured
+        var current_order = this.pos.get_order();
+        if (current_order) {
+          var selected_line = current_order.get_selected_orderline();
+          if (selected_line && selected_line.product) {
+            popup_state.orderline_id = selected_line.cid; // Use client ID for tracking
+            popup_state.product_id = selected_line.product.id;
+            popup_state.product_name = selected_line.product.display_name;
+          }
+        }
+      }
+      // Could extend this for other popup types in the future
+      else if (this.pos && this.pos.gui && this.pos.gui.current_popup) {
+        popup_state = {
+          type: 'generic',
+          popup_name: this.pos.gui.current_popup.template || 'unknown'
+        };
+      }
+
+      this.saved_popup_state = popup_state;
+
+      if (popup_state) {
+        console.log('Saved popup state for restoration:', popup_state);
+      }
+    },
+
+    /**
+     * Restore popup state after unlock if applicable
+     */
+    restore_popup_state: function () {
+      if (!this.saved_popup_state) {
+        return;
+      }
+
+      var popup_state = this.saved_popup_state;
+      console.log('Attempting to restore popup state:', popup_state);
+
+      if (popup_state.type === 'side_dishes') {
+        this.restore_side_dishes_popup(popup_state);
+      }
+      // Could handle other popup types here
+
+      // Clear saved state after restoration attempt
+      this.saved_popup_state = null;
+    },
+
+    /**
+     * Restore side dishes popup specifically
+     */
+    restore_side_dishes_popup: function (popup_state) {
+      var self = this;
+
+      // Show restoration prompt to user
+      if (this.pos && this.pos.gui) {
+        this.pos.gui.show_popup('confirm', {
+          title: 'Side Dishes Selection Interrupted',
+          body: 'Your side dish selection for "' + (popup_state.product_name || 'product') +
+            '" was interrupted by screen lock.\n\nWould you like to continue selecting side dishes?',
+          confirm: function () {
+            // Find the orderline and reopen side dishes popup
+            self.reopen_side_dishes_popup(popup_state);
+          },
+          cancel: function () {
+            // User chose not to restore - remove the product that needs sides
+            self.handle_incomplete_side_dish_product(popup_state);
+          }
+        });
+      }
+    },
+
+    /**
+     * Reopen side dishes popup for the interrupted product
+     */
+    reopen_side_dishes_popup: function (popup_state) {
+      if (!this.pos || !popup_state.orderline_id) {
+        return;
+      }
+
+      var current_order = this.pos.get_order();
+      if (!current_order) {
+        return;
+      }
+
+      // Find the orderline by client ID
+      var target_line = null;
+      var orderlines = current_order.get_orderlines();
+
+      for (var i = 0; i < orderlines.length; i++) {
+        if (orderlines[i].cid === popup_state.orderline_id) {
+          target_line = orderlines[i];
+          break;
+        }
+      }
+
+      if (target_line) {
+        // Select the line and trigger side dishes popup
+        current_order.select_orderline(target_line);
+
+        // Use a small delay to ensure the line is selected
+        setTimeout(function () {
+          if (target_line.has_side_groups && target_line.has_side_groups()) {
+            // Trigger side dishes popup using the proper method
+            if (this.pos.gui.show_popup) {
+              this.pos.gui.show_popup('side_dishes_popup', {
+                line: target_line,
+                title: 'Select Side Dishes for ' + target_line.product.display_name
+              });
+            }
+          }
+        }.bind(this), 100);
+      }
+    },
+
+    /**
+     * Handle incomplete side dish product by removing it or offering alternatives
+     */
+    handle_incomplete_side_dish_product: function (popup_state) {
+      if (!this.pos || !popup_state.orderline_id) {
+        return;
+      }
+
+      var current_order = this.pos.get_order();
+      if (!current_order) {
+        return;
+      }
+
+      // Find and remove the incomplete orderline
+      var target_line = null;
+      var orderlines = current_order.get_orderlines();
+
+      for (var i = 0; i < orderlines.length; i++) {
+        if (orderlines[i].cid === popup_state.orderline_id) {
+          target_line = orderlines[i];
+          break;
+        }
+      }
+
+      if (target_line) {
+        // Check if this product requires side dishes
+        var requires_sides = target_line.has_side_groups && target_line.has_side_groups() &&
+          target_line.get_required_side_groups && target_line.get_required_side_groups().length > 0;
+
+        if (requires_sides) {
+          // Remove the product since it requires sides but user cancelled
+          current_order.remove_orderline(target_line);
+
+          // Show notification
+          if (this.pos.gui && this.pos.gui.show_popup) {
+            this.pos.gui.show_popup('error', {
+              title: 'Product Removed',
+              body: '"' + (popup_state.product_name || 'Product') + '" was removed from the order because it requires side dish selection.'
+            });
+          }
+        }
+        // If sides are optional, leave the product in the order
+      }
     },
 
     /**
